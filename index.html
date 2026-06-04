@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>bbyangl</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;500;700;800&family=Fira+Code:wght@300;400&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --bg:#050202;
+  --bg2:#0e0505;
+  --bld:#3d0808;
+  --r1:#7a1010;
+  --r2:#a81818;
+  --r3:#cc2222;
+  --smk:#5e3838;
+  --cr:#e2d4cb;
+  --cr2:#a08878;
+  --ln:rgba(80,12,12,.22);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--cr);font-family:'DM Serif Display',Georgia,serif;overflow-x:hidden;cursor:crosshair;-webkit-font-smoothing:antialiased;}
+
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9990;opacity:.65;mix-blend-mode:screen;
+}
+
+.gl{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(230px);}
+.g1{width:600px;height:600px;background:#380000;opacity:.22;top:-220px;right:-160px;}
+.g2{width:350px;height:350px;background:#180000;opacity:.28;bottom:-60px;left:-50px;}
+
+/* ── player ── */
+#player{
+  position:fixed;top:0;left:0;right:0;z-index:999;
+  height:38px;
+  display:flex;align-items:center;gap:10px;
+  padding:0 26px;
+  background:rgba(4,1,1,.93);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--ln);
+}
+.pbtn{
+  width:20px;height:20px;
+  border:1px solid var(--bld);background:none;cursor:pointer;
+  display:grid;place-items:center;
+  color:var(--r2);flex-shrink:0;
+  transition:background .15s,border-color .15s;
+}
+.pbtn:hover{background:rgba(61,8,8,.5);border-color:var(--r2);}
+.pbtn svg{width:8px;height:8px;fill:currentColor;}
+.ptxt{
+  font-family:'Fira Code',monospace;font-size:8px;font-weight:300;
+  letter-spacing:.16em;color:var(--smk);text-transform:lowercase;
+}
+.ptxt b{color:var(--cr2);font-weight:400;}
+.peq{display:flex;align-items:flex-end;gap:2px;height:11px;margin-left:auto;}
+.bar{width:2px;background:var(--r1);border-radius:1px;height:2px;}
+.peq.on .b1{animation:bq .9s ease-in-out infinite;}
+.peq.on .b2{animation:bq .65s ease-in-out .12s infinite;}
+.peq.on .b3{animation:bq 1.1s ease-in-out .05s infinite;}
+.peq.on .b4{animation:bq .75s ease-in-out .18s infinite;}
+.peq.on .b5{animation:bq .85s ease-in-out .08s infinite;}
+@keyframes bq{0%,100%{height:2px}50%{height:11px}}
+
+/* ── hero ── */
+.hero{
+  position:relative;z-index:1;
+  min-height:100vh;padding-top:38px;
+  display:grid;grid-template-columns:1fr 355px;
+}
+
+.hl{
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:52px 50px 56px 66px;
+  position:relative;overflow:hidden;
+}
+
+.ghost-w{
+  position:absolute;bottom:-24px;left:-16px;
+  font-family:'Syne',sans-serif;font-size:clamp(140px,22vw,260px);font-weight:800;
+  color:transparent;-webkit-text-stroke:1px rgba(61,8,8,.08);
+  letter-spacing:-.05em;pointer-events:none;user-select:none;
+  line-height:1;white-space:nowrap;
+}
+
+.hi{position:relative;z-index:1;}
+
+/* ── links row ── */
+.links-row{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:28px;
+}
+.lnk{
+  font-family:'Fira Code',monospace;font-size:8px;font-weight:300;
+  letter-spacing:.22em;text-transform:lowercase;
+  color:var(--smk);text-decoration:none;
+  padding:5px 13px;
+  border:1px solid var(--ln);
+  transition:color .18s,border-color .18s,background .18s;
+  white-space:nowrap;
+}
+.lnk:hover{color:var(--cr);border-color:var(--r1);background:rgba(61,8,8,.18);}
+
+.nick-pre{
+  font-family:'Fira Code',monospace;font-size:8px;font-weight:300;
+  letter-spacing:.38em;text-transform:uppercase;
+  color:var(--r1);opacity:.5;
+  display:block;margin-bottom:8px;
+}
+
+.nick{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(48px,7.8vw,96px);
+  font-weight:800;line-height:.91;
+  letter-spacing:-.04em;color:var(--cr);
+  margin-left:-4px;margin-bottom:22px;
+}
+
+.about{
+  font-family:'DM Serif Display',serif;
+  font-size:14px;font-style:italic;
+  color:var(--smk);line-height:1.9;
+  max-width:295px;margin-bottom:38px;
+}
+
+.chips{display:flex;align-items:center;flex-wrap:wrap;row-gap:8px;}
+.ch{
+  font-family:'Fira Code',monospace;font-size:8px;font-weight:300;
+  letter-spacing:.18em;text-transform:lowercase;color:var(--smk);
+  padding-right:18px;border-right:1px solid var(--ln);
+}
+.ch:last-child{border-right:none;}
+.ch b{color:var(--r2);font-weight:400;font-size:13px;display:block;margin-bottom:2px;font-family:'DM Serif Display',serif;font-style:italic;}
+
+/* photo */
+.hr{position:relative;overflow:hidden;}
+.hr img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center 16%;display:block;
+  filter:grayscale(18%) contrast(1.05) brightness(.86);
+}
+.hr::before{
+  content:'';position:absolute;inset:0;
+  background:
+    linear-gradient(to right,var(--bg) 0%,rgba(5,2,2,.08) 26%,transparent 52%),
+    linear-gradient(to top,var(--bg) 0%,transparent 26%);
+  z-index:1;
+}
+
+/* divider */
+.dline{height:1px;background:linear-gradient(90deg,transparent,var(--r1),transparent);opacity:.15;position:relative;z-index:1;}
+
+/* sections */
+.secs{
+  position:relative;z-index:1;
+  max-width:800px;margin:0 auto;
+  padding:0 66px 78px;
+}
+
+.sec{
+  padding-top:62px;
+  opacity:0;transform:translateY(15px);
+  transition:opacity .58s ease,transform .58s ease;
+}
+.sec.vis{opacity:1;transform:none;}
+
+.slbl{
+  font-family:'Fira Code',monospace;font-size:7.5px;font-weight:300;
+  letter-spacing:.44em;text-transform:uppercase;
+  color:var(--r1);opacity:.5;margin-bottom:9px;margin-left:1px;
+}
+
+.sh{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(20px,2.6vw,30px);font-weight:700;
+  color:var(--cr);letter-spacing:-.025em;line-height:1.1;margin-bottom:28px;
+}
+.sh em{font-family:'DM Serif Display',serif;font-style:italic;font-weight:400;color:var(--r2);}
+
+/* music */
+.mlist{display:flex;flex-direction:column;}
+.mrow{
+  display:flex;align-items:baseline;
+  padding:10px 0;
+  border-bottom:1px solid rgba(80,12,12,.13);
+  position:relative;overflow:hidden;
+}
+.mrow:first-child{border-top:1px solid rgba(80,12,12,.13);}
+.mrow::before{content:'';position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(61,8,8,.09);transition:width .32s;}
+.mrow:hover::before{width:100%;}
+.mi{font-family:'Fira Code',monospace;font-size:8px;font-weight:300;color:var(--bld);letter-spacing:.05em;width:25px;flex-shrink:0;position:relative;z-index:1;}
+.mn{font-family:'DM Serif Display',serif;font-size:17px;font-style:italic;color:var(--cr2);transition:color .18s;position:relative;z-index:1;}
+.mrow:nth-child(-n+3) .mn{color:var(--cr);font-size:17px;}
+.mrow:hover .mn{color:var(--cr);}
+
+
+/* movies */
+.mvlist{display:flex;flex-direction:column;}
+.mvrow{
+  display:flex;align-items:baseline;gap:13px;
+  padding:12px 0;border-bottom:1px solid rgba(80,12,12,.1);
+  transition:padding-left .2s;
+}
+.mvrow:first-child{border-top:1px solid rgba(80,12,12,.1);}
+.mvrow:hover{padding-left:6px;}
+.mvn{font-family:'Syne',sans-serif;font-size:10px;font-weight:500;color:var(--bld);letter-spacing:.04em;min-width:26px;}
+.mvt{font-family:'DM Serif Display',serif;font-size:20px;font-style:italic;color:var(--cr2);transition:color .18s;line-height:1;}
+.mvrow:hover .mvt{color:var(--cr);}
+
+/* games */
+.ggrid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:1px;background:var(--ln);max-width:95%;
+}
+.gm{
+  background:var(--bg2);padding:17px 19px 15px;
+  font-family:'DM Serif Display',serif;font-size:17px;font-style:italic;
+  color:var(--cr2);transition:background .18s,color .18s;position:relative;
+}
+.gm::after{
+  content:attr(data-n);position:absolute;top:8px;right:11px;
+  font-family:'Fira Code',monospace;font-size:7px;font-weight:300;
+  color:var(--bld);letter-spacing:.08em;
+}
+.gm:hover{background:rgba(61,8,8,.2);color:var(--cr);}
+.gm.s2{grid-column:span 2;font-size:21px;padding:22px 21px 19px;}
+
+/* footer */
+footer{
+  position:relative;z-index:1;
+  border-top:1px solid var(--ln);
+  padding:24px 66px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.fn{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--r1);letter-spacing:.1em;}
+.fy{font-family:'Fira Code',monospace;font-size:7.5px;font-weight:300;color:var(--smk);letter-spacing:.25em;opacity:.4;}
+
+@media(max-width:740px){
+  .hero{grid-template-columns:1fr;}
+  .hr{height:50vw;}
+  .hl{padding:46px 26px 48px;}
+  .secs{padding:0 26px 58px;}
+  .ggrid{max-width:100%;}
+  footer{padding:20px 26px;}
+}
+
+</style>
+</head>
+<body>
+
+<div class="gl g1"></div>
+<div class="gl g2"></div>
+
+<div id="player">
+  <button class="pbtn" id="pb" onclick="tp()">
+    <svg id="pi" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+  </button>
+  <span class="ptxt"><b>bladee</b>&nbsp;—&nbsp;hotel breakfast</span>
+  <div class="peq" id="eq">
+    <div class="bar b1"></div><div class="bar b2"></div>
+    <div class="bar b3"></div><div class="bar b4"></div><div class="bar b5"></div>
+  </div>
+</div>
+
+<audio id="mus" src="Bladee___Hotel_Breakfast.mp3" loop preload="auto"></audio>
+
+<div class="hero">
+  <div class="hl">
+    <div class="ghost-w">ANGL</div>
+    <div class="hi">
+
+      <div class="links-row">
+        <a class="lnk" href="https://t.me/byy333_byy333" target="_blank">dm</a>
+        <a class="lnk" href="https://t.me/+EyZ4QsXuQvI4ZWZi" target="_blank">channel</a>
+      </div>
+
+      <span class="nick-pre">bbyangl</span>
+      <div class="nick">bbyangl</div>
+      <p class="about">
+        i don't really know what to write here.<br>
+        music, games, dark rooms.<br>
+        probably listening to something sad rn.
+      </p>
+      <div class="chips">
+        <div class="ch"><b>infp</b>mbti</div>
+        <div class="ch"><b>tired</b>mood</div>
+        <div class="ch"><b>2026</b>year</div>
+      </div>
+    </div>
+  </div>
+  <div class="hr">
+    <img src="1000874811.jpg" alt=""/>
+  </div>
+</div>
+
+<div class="dline"></div>
+
+<div class="secs">
+
+  <div class="sec">
+    <div class="slbl">sounds</div>
+    <div class="sh">music i <em>love</em></div>
+    <div class="mlist">
+      <div class="mrow"><span class="mi">01</span><span class="mn">haunted mound</span></div>
+      <div class="mrow"><span class="mi">02</span><span class="mn">kai angel &amp; 9mice</span></div>
+      <div class="mrow"><span class="mi">03</span><span class="mn">bladee</span></div>
+      <div class="mrow"><span class="mi">04</span><span class="mn">che</span></div>
+      <div class="mrow"><span class="mi">05</span><span class="mn">xaviersobased</span></div>
+      <div class="mrow"><span class="mi">06</span><span class="mn">nettspend</span></div>
+      <div class="mrow"><span class="mi">07</span><span class="mn">ken carson</span></div>
+      <div class="mrow"><span class="mi">08</span><span class="mn">romanceplanet</span></div>
+      <div class="mrow"><span class="mi">09</span><span class="mn">wifisfuneral</span></div>
+      <div class="mrow"><span class="mi">10</span><span class="mn">lazzy2wise</span></div>
+      <div class="mrow"><span class="mi">11</span><span class="mn">radiohead</span></div>
+    </div>
+  </div>
+
+  <div class="dline" style="margin-top:46px;"></div>
+
+  <div class="sec" style="transition-delay:.06s">
+    <div class="slbl">screen</div>
+    <div class="sh">fav <em>movies &amp; shows</em></div>
+    <div class="mvlist">
+      <div class="mvrow"><span class="mvn">01</span><span class="mvt">breaking bad</span></div>
+      <div class="mvrow"><span class="mvn">02</span><span class="mvt">better call saul</span></div>
+      <div class="mvrow"><span class="mvn">03</span><span class="mvt">bojack horseman</span></div>
+      <div class="mvrow"><span class="mvn">04</span><span class="mvt">pulp fiction</span></div>
+      <div class="mvrow"><span class="mvn">05</span><span class="mvt">fight club</span></div>
+      <div class="mvrow"><span class="mvn">06</span><span class="mvt">mid90s</span></div>
+    </div>
+  </div>
+
+  <div class="dline" style="margin-top:46px;"></div>
+
+  <div class="sec" style="transition-delay:.04s">
+    <div class="slbl">games</div>
+    <div class="sh">what i <em>play</em></div>
+    <div class="ggrid">
+      <div class="gm s2" data-n="01">hotline miami</div>
+      <div class="gm" data-n="02">project sekai</div>
+      <div class="gm" data-n="03">postal</div>
+      <div class="gm" data-n="04">deltarune</div>
+      <div class="gm" data-n="05">omori</div>
+      <div class="gm s2" data-n="06">cry of fear</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span class="fn">bbyangl</span>
+  <span class="fy">2026</span>
+</footer>
+
+<script>
+const au=document.getElementById('mus'),pi=document.getElementById('pi'),eq=document.getElementById('eq');
+let on=false;
+const P='<path d="M8 5v14l11-7z"/>',S='<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+function sync(s){on=s;pi.innerHTML=s?S:P;eq.classList.toggle('on',s);}
+function tp(){on?au.pause():au.play().then(()=>sync(true)).catch(()=>{});}
+au.addEventListener('play',()=>sync(true));
+au.addEventListener('pause',()=>sync(false));
+let tried=false;
+function tryAuto(){if(tried)return;tried=true;au.play().then(()=>sync(true)).catch(()=>{tried=false;});}
+['click','scroll','touchstart','keydown'].forEach(e=>document.addEventListener(e,tryAuto,{once:true}));
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');});},{threshold:.05});
+document.querySelectorAll('.sec').forEach(el=>obs.observe(el));
+</script>
+
+</body>
+</html>
